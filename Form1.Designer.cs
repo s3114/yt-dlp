@@ -70,6 +70,7 @@
             // 
             // buttonDownload
             // 
+            buttonDownload.AutoSize = true;
             buttonDownload.Location = new Point(387, 446);
             buttonDownload.Name = "buttonDownload";
             buttonDownload.Size = new Size(99, 25);
