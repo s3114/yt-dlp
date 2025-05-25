@@ -72,11 +72,7 @@ namespace yt_dlp
             // 1. version.txt の存在を確認し、なければ作成（最優先）
             if (!File.Exists(versionPath))
             {
-<<<<<<< HEAD
-                File.WriteAllText(versionPath, "0.2.1");
-=======
                 File.WriteAllText(versionPath, "0.2.2");
->>>>>>> e28527a203610773a775327491d8cf37ba54aa90
             }
 
             if (!File.Exists(settingsPath)) return;
@@ -735,7 +731,8 @@ namespace yt_dlp
 
         private void setup_update_Click(object sender, EventArgs e)
         {
-            string saveDir = Application.StartupPath;
+            string TrueExePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string saveDir = Path.GetDirectoryName(TrueExePath);
 
             // ffmpeg チェック & ダウンロード + 展開
             string ffmpegExePath = Path.Combine(saveDir, "ffmpeg.exe");
@@ -906,5 +903,6 @@ namespace yt_dlp
 }
 
 
-//このプログラム事態のバージョンアップ
-//↑そんなことありましたね？？
+
+//上げる前に必ず確認すること
+//バージョンの更新！！！！！！！
