@@ -800,7 +800,7 @@ namespace yt_dlp
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = ytDlpPath,
-                    Arguments = "-U",
+                    Arguments = "--update-to nightly",
                     UseShellExecute = false,
                     CreateNoWindow = false
                 })?.WaitForExit();
