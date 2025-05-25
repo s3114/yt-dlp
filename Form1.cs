@@ -70,7 +70,6 @@ namespace yt_dlp
         private void Form1_Load(object sender, EventArgs e)
         {
             // 1. version.txt の存在を確認し、なければ作成（最優先）
-            string versionPath = Path.Combine(Application.StartupPath, "Version.txt");
             if (!File.Exists(versionPath))
             {
                 File.WriteAllText(versionPath, "0.2.0");
