@@ -73,7 +73,7 @@
             buttonDownload.AutoSize = true;
             buttonDownload.Location = new Point(387, 446);
             buttonDownload.Name = "buttonDownload";
-            buttonDownload.Size = new Size(99, 25);
+            buttonDownload.Size = new Size(99, 30);
             buttonDownload.TabIndex = 2;
             buttonDownload.Text = "ダウンロード";
             buttonDownload.UseVisualStyleBackColor = true;
@@ -223,8 +223,10 @@
             flowLayoutPanel1.AutoSize = true;
             flowLayoutPanel1.Location = new Point(17, 477);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(1090, 510);
+            flowLayoutPanel1.Size = new Size(772, 510);
             flowLayoutPanel1.TabIndex = 15;
+            flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
+            flowLayoutPanel1.WrapContents = false;
             // 
             // setup_update
             // 
@@ -267,10 +269,10 @@
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
+            Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)trackBar1).EndInit();
             ResumeLayout(false);
             PerformLayout();
-            this.Load += new System.EventHandler(this.Form1_Load);
 
 
         }

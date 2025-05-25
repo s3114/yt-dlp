@@ -71,7 +71,7 @@ namespace yt_dlp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            File.WriteAllText(versionPath, "0.2.4");
+            File.WriteAllText(versionPath, "0.2.5");
 
             string versionText = "不明";
 
@@ -538,31 +538,56 @@ namespace yt_dlp
             {
                 string url = rawUrl.Trim();
                 if (string.IsNullOrEmpty(url)) continue;
-                bool isAbemaVideo = url.Contains("abema.tv/video/episode") || url.Contains("abema.tv/video/title");
-                string FormatOption = isAbemaVideo ? "" : $"-f \"{format}\"";
-                string outputPattern = $"{saveDir}\\%(upload_date)s-%(title)s.%(ext)s";
-                string args;
-                args = $"\"{url}\" --cookies \"{cookiePath}\" {ThumbnailOption} --embed-thumbnail --add-metadata {archiveOption} --ignore-errors {FormatOption} --output \"{outputPattern}\" -N {parallel} --fragment-retries 5 --retries infinite";
+
+                // ラベルとプログレスバーを含むパネルを作成
+                Panel downloadPanel = new Panel
+                {
+                    Width = flowLayoutPanel1.Width - 25,
+                    Height = 28,
+                    Margin = new Padding(2)
+                };
+
+                // 横並びにするための TableLayoutPanel を使用（推奨）
+                TableLayoutPanel layout = new TableLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    ColumnCount = 2,
+                    RowCount = 1,
+                    Width = downloadPanel.Width,
+                    Height = downloadPanel.Height
+                };
+                layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F)); // ラベル: 50%
+                layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F)); // プログレスバー: 50%
+
+                Label label = new Label
+                {
+                    Text = url.Length > 60 ? url.Substring(0, 60) + "..." : url,
+                    Dock = DockStyle.Fill,
+                    AutoSize = false,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Padding = new Padding(2)
+                };
 
                 ProgressBar progressBar = new ProgressBar
                 {
                     Minimum = 0,
                     Maximum = 100,
                     Value = 0,
-                    Width = 400,
                     Height = 20,
-                    Margin = new Padding(0, 4, 0, 10)
+                    Dock = DockStyle.Fill,
                 };
 
-                Label progressLabel = new Label
-                {
-                    Text = $"Downloading: {url}",
-                    AutoSize = true
-                };
+                layout.Controls.Add(label, 0, 0);
+                layout.Controls.Add(progressBar, 1, 0);
 
-                // フォーム上に表示（FlowLayoutPanel へ追加）
-                flowLayoutPanel1.Controls.Add(progressLabel);
-                flowLayoutPanel1.Controls.Add(progressBar);
+                downloadPanel.Controls.Add(layout);
+                flowLayoutPanel1.Controls.Add(downloadPanel);
+
+                bool isAbemaVideo = url.Contains("abema.tv/video/episode") || url.Contains("abema.tv/video/title");
+                string FormatOption = isAbemaVideo ? "" : $"-f \"{format}\"";
+                string outputPattern = $"{saveDir}\\%(upload_date)s-%(title)s.%(ext)s";
+                string args;
+                args = $"\"{url}\" --cookies \"{cookiePath}\" {ThumbnailOption} --embed-thumbnail --add-metadata {archiveOption} --ignore-errors {FormatOption} --output \"{outputPattern}\" -N {parallel} --fragment-retries 5 --retries infinite";
 
                 ProcessStartInfo psi = new ProcessStartInfo
                 {
@@ -572,7 +597,6 @@ namespace yt_dlp
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true
-                    
                 };
 
                 Process proc = new Process
@@ -581,8 +605,55 @@ namespace yt_dlp
                     EnableRaisingEvents = true
                 };
 
+                proc.OutputDataReceived += (s, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        this.Invoke(() =>
+                        {
+                            richTextBoxLog.AppendText(e.Data + Environment.NewLine);
+                            richTextBoxLog.SelectionStart = richTextBoxLog.Text.Length;
+                            richTextBoxLog.ScrollToCaret();
+
+                            // 進捗検出
+                            if (e.Data.Contains("[download]"))
+                            {
+                                Match match = Regex.Match(e.Data, @"\[download\]\s+([\d.]+)%");
+                                if (match.Success && double.TryParse(match.Groups[1].Value, out double percent))
+                                {
+                                    progressBar.Value = Math.Min((int)percent, 100);
+                                }
+                            }
+
+                            // メンバー限定検出
+                            if (e.Data.Contains("Join this channel to get access to members-only"))
+                            {
+                                Label errorLabel = new Label
+                                {
+                                    Text = "以下の内容をお試しください:\n・cookieファイルのパスは正しいですか？\n・cookieファイルを更新してください。",
+                                    ForeColor = Color.Red,
+                                    AutoSize = true,
+                                    MaximumSize = new Size(flowLayoutPanel1.Width - 20, 0),
+                                    Margin = new Padding(5)
+                                };
+                                flowLayoutPanel1.Controls.Add(errorLabel);
+                            }
+                        });
+                    }
+                };
+
                 proc.ErrorDataReceived += (s, e) =>
                 {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        this.Invoke(() =>
+                        {
+                            richTextBoxLog.AppendText("[ERROR] " + e.Data + Environment.NewLine);
+                            richTextBoxLog.SelectionStart = richTextBoxLog.Text.Length;
+                            richTextBoxLog.ScrollToCaret();
+                        });
+                    }
+
                     if (!string.IsNullOrEmpty(e.Data) && e.Data.Contains("Join this channel to get access to members-only"))
                     {
                         this.Invoke((MethodInvoker)(() =>
@@ -705,8 +776,7 @@ namespace yt_dlp
                 {
                     this.Invoke((MethodInvoker)(() =>
                     {
-                        flowLayoutPanel1.Controls.Remove(progressBar);
-                        flowLayoutPanel1.Controls.Remove(progressLabel);
+                        flowLayoutPanel1.Controls.Remove(downloadPanel);
                     }));
 
 
