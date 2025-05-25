@@ -266,10 +266,11 @@
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "Youtubeダウンローダー 0.1.0";
             ((System.ComponentModel.ISupportInitialize)trackBar1).EndInit();
             ResumeLayout(false);
             PerformLayout();
+            this.Load += new System.EventHandler(this.Form1_Load);
+
 
         }
 

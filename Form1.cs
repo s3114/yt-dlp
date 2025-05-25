@@ -11,6 +11,8 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
 
+
+
 namespace yt_dlp
 {
     public partial class Form1 : Form
@@ -74,6 +76,17 @@ namespace yt_dlp
             {
                 File.WriteAllText(versionPath, "0.2.3");
             }
+
+            string versionText = "不明";
+
+            if (File.Exists(versionPath))
+            {
+                versionText = File.ReadAllText(versionPath).Trim();
+            }
+
+            // フォームのタイトルを設定
+            this.Text = $"Youtubeダウンローダー {versionText}";
+
 
             if (!File.Exists(settingsPath)) return;
 
@@ -731,8 +744,16 @@ namespace yt_dlp
 
         private void setup_update_Click(object sender, EventArgs e)
         {
-            string TrueExePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            string saveDir = Path.GetDirectoryName(TrueExePath);
+            string saveDir = "";
+            try
+            {
+                string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                saveDir = Path.GetDirectoryName(exePath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("保存先ディレクトリの取得に失敗しました: " + ex.Message);
+            }
 
             // ffmpeg チェック & ダウンロード + 展開
             string ffmpegExePath = Path.Combine(saveDir, "ffmpeg.exe");
