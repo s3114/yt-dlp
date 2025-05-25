@@ -72,7 +72,7 @@ namespace yt_dlp
             // 1. version.txt の存在を確認し、なければ作成（最優先）
             if (!File.Exists(versionPath))
             {
-                File.WriteAllText(versionPath, "0.2.2");
+                File.WriteAllText(versionPath, "0.2.3");
             }
 
             if (!File.Exists(settingsPath)) return;
