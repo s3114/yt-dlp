@@ -859,11 +859,11 @@ namespace yt_dlp
             //downloader自体のアップデート
             try
             {
-                string currentVersion =  versionPath;
                 using (HttpClient client = new HttpClient())
                 {
                     string versionUrl = "https://raw.githubusercontent.com/s3114/yt-dlp/refs/heads/master/Version.txt";
                     string latestVersion = client.GetStringAsync(versionUrl).Result.Trim();
+                    string currentVersion = File.ReadAllText(versionPath).Trim();
 
                     if (currentVersion != latestVersion)
                     {
