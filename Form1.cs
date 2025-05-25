@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using static System.Windows.Forms.LinkLabel;
 using System.IO.Compression;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace yt_dlp
 {
@@ -15,6 +17,7 @@ namespace yt_dlp
     {
         string settingsPath = "settings.txt";
         string urlListPath = "URL_list.txt";
+        string versionPath = "Version.txt";
 
         public Form1()
         {
@@ -63,15 +66,19 @@ namespace yt_dlp
 
             this.Load += Form1_Load;
         }
+
         private void Form1_Load(object sender, EventArgs e)
         {
+            // 1. version.txt の存在を確認し、なければ作成（最優先）
+            string versionPath = Path.Combine(Application.StartupPath, "Version.txt");
+            if (!File.Exists(versionPath))
+            {
+                File.WriteAllText(versionPath, "0.2.0");
+            }
+
             if (!File.Exists(settingsPath)) return;
 
             string[] lines = File.ReadAllLines(settingsPath);
-
-            string versionFilePath = Path.Combine(Application.StartupPath, "Version.txt");
-            File.WriteAllText(versionFilePath, "0.1.0");
-
 
             // 1行目: download_quality=X
             if (lines.Length >= 1 && lines[0].StartsWith("download_quality="))
@@ -827,6 +834,68 @@ namespace yt_dlp
                     }
                 }
             }
+
+            //downloader自体のアップデート
+            try
+            {
+                string currentVersion = File.ReadAllText(Path.Combine(Application.StartupPath, "Version.txt")).Trim();
+                using (HttpClient client = new HttpClient())
+                {
+                    string versionUrl = "https://raw.githubusercontent.com/s3114/yt-dlp/refs/heads/master/Version.txt";
+                    string latestVersion = client.GetStringAsync(versionUrl).Result.Trim();
+
+                    if (currentVersion != latestVersion)
+                    {
+                        DialogResult result = MessageBox.Show(
+                            $"新しいバージョン {latestVersion} が見つかりました。\nアップデートしますか？",
+                            "アップデート確認",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Information
+                        );
+
+                        if (result == DialogResult.Yes)
+                        {
+                            string exeUrl = "https://github.com/s3114/yt-dlp/releases/latest/download/Youtube-downloader.exe";
+                            string tempPath = Path.Combine(Path.GetTempPath(), "Youtube-downloader_new.exe");
+
+                            using (HttpResponseMessage response = client.GetAsync(exeUrl).Result)
+                            using (FileStream fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                            {
+                                response.Content.CopyToAsync(fs).Wait();
+                            }
+
+                            string updaterScript = Path.Combine(Path.GetTempPath(), "update.bat");
+                            string exePath = Application.ExecutablePath;
+
+                            File.WriteAllText(updaterScript, $@"
+                                @echo off
+                                timeout /t 1 /nobreak > nul
+                                copy /y ""{tempPath}"" ""{exePath}""
+                                start """" ""{exePath}""
+                                del ""{tempPath}""
+                                del ""%~f0""
+                                ");
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = updaterScript,
+                                UseShellExecute = true,
+                                CreateNoWindow = true
+                            });
+
+                            Application.Exit(); // 自アプリ終了
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("最新版を使用しています。", "確認", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"バージョン確認またはアップデートに失敗しました:\n{ex.Message}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
 
             MessageBox.Show("セットアップ又はアップデートが完了しました。", "完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
