@@ -41,14 +41,6 @@ namespace yt_dlp
             checkedListBoxQuality.CheckOnClick = true;
             checkedListBoxQuality.ItemCheck += CheckedListBoxQuality_ItemCheck;
 
-            checkedListBoxDLhistory.Items.AddRange(new string[] { "yes", "no" });
-            checkedListBoxDLhistory.CheckOnClick = true;
-            checkedListBoxDLhistory.ItemCheck += CheckedListBoxDLhistory_ItemCheck;
-
-            checkedListBoxThumbnail.Items.AddRange(new string[] { "yes", "no" });
-            checkedListBoxThumbnail.CheckOnClick = true;
-            checkedListBoxThumbnail.ItemCheck += CheckedListBoxThumbnail_ItemCheck;
-
             trackBar1.Minimum = 1;
             trackBar1.Maximum = 32;
             trackBar1.Value = 8; // 初期値（お好みで変更）
@@ -71,7 +63,7 @@ namespace yt_dlp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            File.WriteAllText(versionPath, "0.2.5");
+            File.WriteAllText(versionPath, "0.2.6");
 
             string versionText = "不明";
 
@@ -108,12 +100,13 @@ namespace yt_dlp
                 string flag = lines[1].Substring("DLhistory=".Length).Trim().ToLower();
                 if (flag == "yes")
                 {
-                    checkedListBoxDLhistory.SetItemChecked(0, true);
+                    toggleCheckBox_DLhistory.Checked = true;
                 }
                 else if (flag == "no")
                 {
-                    checkedListBoxDLhistory.SetItemChecked(1, true);
+                    toggleCheckBox_DLhistory.Checked = false;
                 }
+                toggleCheckBox_DLhistory.Text = toggleCheckBox_DLhistory.Checked ? "YES" : "NO";
             }
 
             // 3行目: parallelDL=1~32
@@ -159,12 +152,28 @@ namespace yt_dlp
                 string flag = lines[6].Substring("Thumbnail=".Length).Trim().ToLower();
                 if (flag == "yes")
                 {
-                    checkedListBoxThumbnail.SetItemChecked(0, true);
+                    toggleCheckBox_Thumbnail.Checked = true;
                 }
                 else if (flag == "no")
                 {
-                    checkedListBoxThumbnail.SetItemChecked(1, true);
+                    toggleCheckBox_Thumbnail.Checked = false;
                 }
+                toggleCheckBox_Thumbnail.Text = toggleCheckBox_Thumbnail.Checked ? "YES" : "NO";
+            }
+
+            // 8行目: DRMprotected=yes/no
+            if (lines.Length >= 8 && lines[7].StartsWith("DRMprotected="))
+            {
+                string flag = lines[7].Substring("DRMprotected=".Length).Trim().ToLower();
+                if (flag == "yes")
+                {
+                    toggleCheckBox_DRMprotected.Checked = true;
+                }
+                else if (flag == "no")
+                {
+                    toggleCheckBox_DRMprotected.Checked = false;
+                }
+                toggleCheckBox_DRMprotected.Text = toggleCheckBox_DRMprotected.Checked ? "YES" : "NO";
             }
         }
 
@@ -191,17 +200,11 @@ namespace yt_dlp
             }
         }
 
-        private void CheckedListBoxDLhistory_ItemCheck(object sender, ItemCheckEventArgs e)
+        private void toggle_DLhistory(object sender, EventArgs e)
         {
-            for (int i = 0; i < checkedListBoxDLhistory.Items.Count; i++)
-            {
-                if (i != e.Index)
-                {
-                    checkedListBoxDLhistory.SetItemChecked(i, false);
-                }
-            }
+            toggleCheckBox_DLhistory.Text = toggleCheckBox_DLhistory.Checked ? "YES" : "NO";
 
-            string selected = (e.Index == 0) ? "yes" : "no";
+            string selected = toggleCheckBox_DLhistory.Checked ? "yes" : "no";
 
             string[] lines = File.Exists(settingsPath) ? File.ReadAllLines(settingsPath) : new string[2];
             lines = SettingsLines(lines);
@@ -210,22 +213,29 @@ namespace yt_dlp
             File.WriteAllLines(settingsPath, lines);
         }
 
-        private void CheckedListBoxThumbnail_ItemCheck(object sender, ItemCheckEventArgs e)
+        private void toggle_Thumbnail(object sender, EventArgs e)
         {
-            for (int i = 0; i < checkedListBoxThumbnail.Items.Count; i++)
-            {
-                if (i != e.Index)
-                {
-                    checkedListBoxThumbnail.SetItemChecked(i, false);
-                }
-            }
+            toggleCheckBox_Thumbnail.Text = toggleCheckBox_Thumbnail.Checked ? "YES" : "NO";
 
-            string selected = (e.Index == 0) ? "yes" : "no";
+            string selected = toggleCheckBox_Thumbnail.Checked ? "yes" : "no";
 
             string[] lines = File.Exists(settingsPath) ? File.ReadAllLines(settingsPath) : new string[7];
             lines = SettingsLines(lines);
 
             lines[6] = $"Thumbnail={selected}";
+            File.WriteAllLines(settingsPath, lines);
+        }
+
+        private void toggle_DRMprotected(object sender, EventArgs e)
+        {
+            toggleCheckBox_DRMprotected.Text = toggleCheckBox_DRMprotected.Checked ? "YES" : "NO";
+
+            string selected = toggleCheckBox_DRMprotected.Checked ? "yes" : "no";
+
+            string[] lines = File.Exists(settingsPath) ? File.ReadAllLines(settingsPath) : new string[8]; // ここを8に変更
+            lines = SettingsLines(lines);
+
+            lines[7] = $"DRMprotected={selected}"; // 8行目（インデックス7）に書き込み
             File.WriteAllLines(settingsPath, lines);
         }
 
@@ -302,9 +312,6 @@ namespace yt_dlp
                     // yt-dlp でプレイリストURL群を取得し、URL_list.txt に出力
                     string args;
                     args = $"\"{url}\" --flat-playlist --skip-download --get-url --quiet --no-warnings";
-
-
-
 
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
@@ -411,7 +418,7 @@ namespace yt_dlp
 
         private string[] SettingsLines(string[] lines)
         {
-            string[] result = new string[7];
+            string[] result = new string[8];
             result[0] = (lines.Length > 0) ? lines[0] : "download_quality=4";
             result[1] = (lines.Length > 1) ? lines[1] : "DLhistory=no";
             result[2] = (lines.Length > 2) ? lines[2] : "parallelDL=8";
@@ -419,6 +426,7 @@ namespace yt_dlp
             result[4] = (lines.Length > 4) ? lines[4] : "path";
             result[5] = (lines.Length > 5) ? lines[5] : "SaveDir";
             result[6] = (lines.Length > 6) ? lines[6] : "Thumbnail=no";
+            result[7] = (lines.Length > 7) ? lines[7] : "DRMprotected=no";
             return result;
         }
 
@@ -532,6 +540,11 @@ namespace yt_dlp
             bool useThumbnail = settings.Length >= 7 && settings[6].Trim().ToLower().Contains("yes");
             string ThumbnailOption = useThumbnail ? "--write-thumbnail" : "";
 
+            // 5.2 DRMprotected
+            bool isDRMprotected = settings.Length >= 8 && settings[7].Trim().ToLower().Contains("yes");
+            string DRMOption = isDRMprotected ? "--extractor-args \"youtube:player-client=default,-tv,web_safari,web_embedded\"" : "";
+
+
 
             // 6. URL ループ
             foreach (string rawUrl in urls)
@@ -587,7 +600,7 @@ namespace yt_dlp
                 string FormatOption = isAbemaVideo ? "" : $"-f \"{format}\"";
                 string outputPattern = $"{saveDir}\\%(upload_date)s-%(title)s.%(ext)s";
                 string args;
-                args = $"\"{url}\" --cookies \"{cookiePath}\" {ThumbnailOption} --embed-thumbnail --add-metadata {archiveOption} --ignore-errors {FormatOption} --output \"{outputPattern}\" -N {parallel} --fragment-retries 5 --retries infinite";
+                args = $"\"{url}\" --cookies \"{cookiePath}\" {ThumbnailOption} {DRMOption} --embed-thumbnail --add-metadata {archiveOption} --ignore-errors {FormatOption} --output \"{outputPattern}\" -N {parallel} --fragment-retries 5 --retries infinite";
 
                 ProcessStartInfo psi = new ProcessStartInfo
                 {
@@ -803,6 +816,7 @@ namespace yt_dlp
                     catch (Exception ex)
                     {
                         MessageBox.Show($"サムネイルの移動に失敗しました:\n{ex.Message}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        this.Activate();
                     }
                 };
             }
@@ -819,6 +833,7 @@ namespace yt_dlp
             catch (Exception ex)
             {
                 MessageBox.Show("保存先ディレクトリの取得に失敗しました: " + ex.Message);
+                this.Activate();
             }
 
             // ffmpeg チェック & ダウンロード + 展開
@@ -858,6 +873,7 @@ namespace yt_dlp
                 catch (Exception ex)
                 {
                     MessageBox.Show($"ffmpeg のインストールに失敗しました: {ex.Message}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Activate();
                 }
             }
 
@@ -879,6 +895,7 @@ namespace yt_dlp
                 catch (Exception ex)
                 {
                     MessageBox.Show($"yt-dlp のダウンロードに失敗しました: {ex.Message}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Activate();
                 }
             }
             else
@@ -918,6 +935,7 @@ namespace yt_dlp
                     catch (Exception ex)
                     {
                         MessageBox.Show($"AtomicParsley の展開に失敗しました: {ex.Message}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        this.Activate();
                     }
                 }
             }
@@ -975,16 +993,19 @@ namespace yt_dlp
                     else
                     {
                         MessageBox.Show("最新版を使用しています。", "確認", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        this.Activate();
                     }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"バージョン確認またはアップデートに失敗しました:\n{ex.Message}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Activate();
             }
 
 
             MessageBox.Show("セットアップ又はアップデートが完了しました。", "完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            this.Activate();
         }
     }
 }
@@ -993,3 +1014,5 @@ namespace yt_dlp
 
 //上げる前に必ず確認すること
 //バージョンの更新！！！！！！！
+
+//--extractor-args "youtube:player-client=default,-tv,web_safari,web_embedded" 

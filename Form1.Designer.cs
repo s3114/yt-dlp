@@ -34,7 +34,7 @@
             buttonDownload = new Button();
             label1 = new Label();
             label2 = new Label();
-            checkedListBoxDLhistory = new CheckedListBox();
+            toggleCheckBox_DLhistory = new CheckBox();
             trackBar1 = new TrackBar();
             label3 = new Label();
             label4 = new Label();
@@ -46,10 +46,12 @@
             label6 = new Label();
             FileRefeBtn = new Button();
             label7 = new Label();
-            checkedListBoxThumbnail = new CheckedListBox();
+            toggleCheckBox_Thumbnail = new CheckBox();
             richTextBoxLog = new RichTextBox();
             flowLayoutPanel1 = new FlowLayoutPanel();
             setup_update = new Button();
+            toggleCheckBox_DRMprotected = new CheckBox();
+            label8 = new Label();
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
             SuspendLayout();
             // 
@@ -91,19 +93,23 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(258, 2);
+            label2.Location = new Point(258, 36);
             label2.Name = "label2";
             label2.Size = new Size(146, 20);
             label2.TabIndex = 4;
             label2.Text = "ダウンロード履歴の保存";
             // 
-            // checkedListBoxDLhistory
+            // toggleCheckBox_DLhistory
             // 
-            checkedListBoxDLhistory.FormattingEnabled = true;
-            checkedListBoxDLhistory.Location = new Point(258, 25);
-            checkedListBoxDLhistory.Name = "checkedListBoxDLhistory";
-            checkedListBoxDLhistory.Size = new Size(228, 70);
-            checkedListBoxDLhistory.TabIndex = 0;
+            toggleCheckBox_DLhistory.Appearance = Appearance.Button;
+            toggleCheckBox_DLhistory.Location = new Point(426, 31);
+            toggleCheckBox_DLhistory.Name = "toggleCheckBox_DLhistory";
+            toggleCheckBox_DLhistory.Size = new Size(60, 30);
+            toggleCheckBox_DLhistory.TabIndex = 0;
+            toggleCheckBox_DLhistory.Text = "NO";
+            toggleCheckBox_DLhistory.TextAlign = ContentAlignment.MiddleCenter;
+            toggleCheckBox_DLhistory.UseVisualStyleBackColor = true;
+            toggleCheckBox_DLhistory.CheckedChanged += toggle_DLhistory;
             // 
             // trackBar1
             // 
@@ -193,19 +199,23 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(258, 83);
+            label7.Location = new Point(260, 72);
             label7.Name = "label7";
             label7.Size = new Size(144, 20);
             label7.TabIndex = 12;
             label7.Text = "サムネイルのダウンロード";
             // 
-            // checkedListBoxThumbnail
+            // toggleCheckBox_Thumbnail
             // 
-            checkedListBoxThumbnail.FormattingEnabled = true;
-            checkedListBoxThumbnail.Location = new Point(258, 106);
-            checkedListBoxThumbnail.Name = "checkedListBoxThumbnail";
-            checkedListBoxThumbnail.Size = new Size(228, 70);
-            checkedListBoxThumbnail.TabIndex = 13;
+            toggleCheckBox_Thumbnail.Appearance = Appearance.Button;
+            toggleCheckBox_Thumbnail.Location = new Point(426, 67);
+            toggleCheckBox_Thumbnail.Name = "toggleCheckBox_Thumbnail";
+            toggleCheckBox_Thumbnail.Size = new Size(60, 30);
+            toggleCheckBox_Thumbnail.TabIndex = 13;
+            toggleCheckBox_Thumbnail.Text = "NO";
+            toggleCheckBox_Thumbnail.TextAlign = ContentAlignment.MiddleCenter;
+            toggleCheckBox_Thumbnail.UseVisualStyleBackColor = true;
+            toggleCheckBox_Thumbnail.CheckedChanged += toggle_Thumbnail;
             // 
             // richTextBoxLog
             // 
@@ -221,11 +231,11 @@
             // 
             flowLayoutPanel1.AutoScroll = true;
             flowLayoutPanel1.AutoSize = true;
+            flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel1.Location = new Point(17, 477);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
             flowLayoutPanel1.Size = new Size(772, 510);
             flowLayoutPanel1.TabIndex = 15;
-            flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel1.WrapContents = false;
             // 
             // setup_update
@@ -240,15 +250,37 @@
             setup_update.UseVisualStyleBackColor = true;
             setup_update.Click += setup_update_Click;
             // 
+            // toggleCheckBox_DRMprotected
+            // 
+            toggleCheckBox_DRMprotected.Appearance = Appearance.Button;
+            toggleCheckBox_DRMprotected.Location = new Point(426, 103);
+            toggleCheckBox_DRMprotected.Name = "toggleCheckBox_DRMprotected";
+            toggleCheckBox_DRMprotected.Size = new Size(60, 30);
+            toggleCheckBox_DRMprotected.TabIndex = 17;
+            toggleCheckBox_DRMprotected.Text = "NO";
+            toggleCheckBox_DRMprotected.TextAlign = ContentAlignment.MiddleCenter;
+            toggleCheckBox_DRMprotected.UseVisualStyleBackColor = true;
+            toggleCheckBox_DRMprotected.CheckedChanged += toggle_DRMprotected;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(258, 108);
+            label8.Name = "label8";
+            label8.Size = new Size(168, 20);
+            label8.TabIndex = 18;
+            label8.Text = "DRM保護を回避(非推奨)";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1125, 816);
+            Controls.Add(label8);
             Controls.Add(setup_update);
             Controls.Add(flowLayoutPanel1);
             Controls.Add(richTextBoxLog);
-            Controls.Add(checkedListBoxThumbnail);
+            Controls.Add(toggleCheckBox_Thumbnail);
             Controls.Add(label7);
             Controls.Add(FileRefeBtn);
             Controls.Add(label6);
@@ -260,12 +292,13 @@
             Controls.Add(label4);
             Controls.Add(label3);
             Controls.Add(trackBar1);
-            Controls.Add(checkedListBoxDLhistory);
+            Controls.Add(toggleCheckBox_DLhistory);
             Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(buttonDownload);
             Controls.Add(textBoxUrl);
             Controls.Add(checkedListBoxQuality);
+            Controls.Add(toggleCheckBox_DRMprotected);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
@@ -284,7 +317,7 @@
         private System.Windows.Forms.Button buttonDownload;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.CheckedListBox checkedListBoxDLhistory;
+        private System.Windows.Forms.CheckBox toggleCheckBox_DLhistory;
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
@@ -296,10 +329,12 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button FileRefeBtn;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.CheckedListBox checkedListBoxThumbnail;
+        private System.Windows.Forms.CheckBox toggleCheckBox_Thumbnail;
         private System.Windows.Forms.RichTextBox richTextBoxLog;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Button setup_update;
+        private System.Windows.Forms.CheckBox toggleCheckBox_DRMprotected;
+        private Label label8;
     }
 }
 
