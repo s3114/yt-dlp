@@ -106,7 +106,7 @@
             toggleCheckBox_DLhistory.Name = "toggleCheckBox_DLhistory";
             toggleCheckBox_DLhistory.Size = new Size(60, 30);
             toggleCheckBox_DLhistory.TabIndex = 0;
-            toggleCheckBox_DLhistory.Text = "NO";
+            toggleCheckBox_DLhistory.Text = "OFF";
             toggleCheckBox_DLhistory.TextAlign = ContentAlignment.MiddleCenter;
             toggleCheckBox_DLhistory.UseVisualStyleBackColor = true;
             toggleCheckBox_DLhistory.CheckedChanged += toggle_DLhistory;
@@ -212,7 +212,7 @@
             toggleCheckBox_Thumbnail.Name = "toggleCheckBox_Thumbnail";
             toggleCheckBox_Thumbnail.Size = new Size(60, 30);
             toggleCheckBox_Thumbnail.TabIndex = 13;
-            toggleCheckBox_Thumbnail.Text = "NO";
+            toggleCheckBox_Thumbnail.Text = "OFF";
             toggleCheckBox_Thumbnail.TextAlign = ContentAlignment.MiddleCenter;
             toggleCheckBox_Thumbnail.UseVisualStyleBackColor = true;
             toggleCheckBox_Thumbnail.CheckedChanged += toggle_Thumbnail;
@@ -257,7 +257,7 @@
             toggleCheckBox_DRMprotected.Name = "toggleCheckBox_DRMprotected";
             toggleCheckBox_DRMprotected.Size = new Size(60, 30);
             toggleCheckBox_DRMprotected.TabIndex = 17;
-            toggleCheckBox_DRMprotected.Text = "NO";
+            toggleCheckBox_DRMprotected.Text = "OFF";
             toggleCheckBox_DRMprotected.TextAlign = ContentAlignment.MiddleCenter;
             toggleCheckBox_DRMprotected.UseVisualStyleBackColor = true;
             toggleCheckBox_DRMprotected.CheckedChanged += toggle_DRMprotected;
