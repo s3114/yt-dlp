@@ -63,7 +63,7 @@ namespace yt_dlp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            File.WriteAllText(versionPath, "0.2.6");
+            File.WriteAllText(versionPath, "0.2.7");
 
             string versionText = "不明";
 
@@ -709,6 +709,20 @@ namespace yt_dlp
                         }));
                     }
 
+                    if (!string.IsNullOrEmpty(e.Data) && e.Data.Contains("they are DRM protected."))
+                    {
+                        this.Invoke((MethodInvoker)(() =>
+                        {
+                            Label adviceLabel = new Label
+                            {
+                                Text = "DRM保護によりダウンロードがブロックされました。「DRMの保護を回避」をONにし、再度ダウンロードをお試しください。",
+                                AutoSize = true,
+                                ForeColor = Color.Red
+                            };
+                            flowLayoutPanel1.Controls.Add(adviceLabel);
+                        }));
+                    }
+
                     if (!string.IsNullOrEmpty(e.Data))
                     {
                         this.Invoke((MethodInvoker)(() =>
@@ -755,6 +769,20 @@ namespace yt_dlp
                             Label adviceLabel = new Label
                             {
                                 Text = "入力されたURLの形式は対応しておりません。\n・short動画は高確率でダウンロードできません。\n short動画以外でダウンロードすることができない場合はdiscordサーバーにてご連絡ください。",
+                                AutoSize = true,
+                                ForeColor = Color.Red
+                            };
+                            flowLayoutPanel1.Controls.Add(adviceLabel);
+                        }));
+                    }
+
+                    if (!string.IsNullOrEmpty(e.Data) && e.Data.Contains("they are DRM protected."))
+                    {
+                        this.Invoke((MethodInvoker)(() =>
+                        {
+                            Label adviceLabel = new Label
+                            {
+                                Text = "DRM保護によりダウンロードがブロックされました。「DRMの保護を回避」をONにし、再度ダウンロードをお試しください。",
                                 AutoSize = true,
                                 ForeColor = Color.Red
                             };
