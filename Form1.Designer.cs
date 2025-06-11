@@ -312,6 +312,7 @@
 
         #endregion
 
+
         private System.Windows.Forms.CheckedListBox checkedListBoxQuality;
         private System.Windows.Forms.TextBox textBoxUrl;
         private System.Windows.Forms.Button buttonDownload;

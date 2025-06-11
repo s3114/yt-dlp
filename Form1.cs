@@ -11,8 +11,6 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
 
-
-
 namespace yt_dlp
 {
     public partial class Form1 : Form
