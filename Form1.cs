@@ -61,7 +61,7 @@ namespace yt_dlp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            File.WriteAllText(versionPath, "0.2.7");
+            File.WriteAllText(versionPath, "0.2.8");
 
             string versionText = "不明";
 
@@ -96,15 +96,15 @@ namespace yt_dlp
             if (lines.Length >= 2 && lines[1].StartsWith("DLhistory="))
             {
                 string flag = lines[1].Substring("DLhistory=".Length).Trim().ToLower();
-                if (flag == "yes")
+                if (flag == "on")
                 {
                     toggleCheckBox_DLhistory.Checked = true;
                 }
-                else if (flag == "no")
+                else if (flag == "off")
                 {
                     toggleCheckBox_DLhistory.Checked = false;
                 }
-                toggleCheckBox_DLhistory.Text = toggleCheckBox_DLhistory.Checked ? "YES" : "NO";
+                toggleCheckBox_DLhistory.Text = toggleCheckBox_DLhistory.Checked ? "ON" : "OFF";
             }
 
             // 3行目: parallelDL=1~32
@@ -148,30 +148,30 @@ namespace yt_dlp
             if (lines.Length >= 7 && lines[6].StartsWith("Thumbnail="))
             {
                 string flag = lines[6].Substring("Thumbnail=".Length).Trim().ToLower();
-                if (flag == "yes")
+                if (flag == "on")
                 {
                     toggleCheckBox_Thumbnail.Checked = true;
                 }
-                else if (flag == "no")
+                else if (flag == "off")
                 {
                     toggleCheckBox_Thumbnail.Checked = false;
                 }
-                toggleCheckBox_Thumbnail.Text = toggleCheckBox_Thumbnail.Checked ? "YES" : "NO";
+                toggleCheckBox_Thumbnail.Text = toggleCheckBox_Thumbnail.Checked ? "ON" : "OFF";
             }
 
             // 8行目: DRMprotected=yes/no
             if (lines.Length >= 8 && lines[7].StartsWith("DRMprotected="))
             {
                 string flag = lines[7].Substring("DRMprotected=".Length).Trim().ToLower();
-                if (flag == "yes")
+                if (flag == "on")
                 {
                     toggleCheckBox_DRMprotected.Checked = true;
                 }
-                else if (flag == "no")
+                else if (flag == "off")
                 {
                     toggleCheckBox_DRMprotected.Checked = false;
                 }
-                toggleCheckBox_DRMprotected.Text = toggleCheckBox_DRMprotected.Checked ? "YES" : "NO";
+                toggleCheckBox_DRMprotected.Text = toggleCheckBox_DRMprotected.Checked ? "ON" : "OFF";
             }
         }
 
@@ -200,9 +200,9 @@ namespace yt_dlp
 
         private void toggle_DLhistory(object sender, EventArgs e)
         {
-            toggleCheckBox_DLhistory.Text = toggleCheckBox_DLhistory.Checked ? "YES" : "NO";
+            toggleCheckBox_DLhistory.Text = toggleCheckBox_DLhistory.Checked ? "ON" : "OFF";
 
-            string selected = toggleCheckBox_DLhistory.Checked ? "yes" : "no";
+            string selected = toggleCheckBox_DLhistory.Checked ? "on" : "off";
 
             string[] lines = File.Exists(settingsPath) ? File.ReadAllLines(settingsPath) : new string[2];
             lines = SettingsLines(lines);
@@ -213,9 +213,9 @@ namespace yt_dlp
 
         private void toggle_Thumbnail(object sender, EventArgs e)
         {
-            toggleCheckBox_Thumbnail.Text = toggleCheckBox_Thumbnail.Checked ? "YES" : "NO";
+            toggleCheckBox_Thumbnail.Text = toggleCheckBox_Thumbnail.Checked ? "ON" : "OFF";
 
-            string selected = toggleCheckBox_Thumbnail.Checked ? "yes" : "no";
+            string selected = toggleCheckBox_Thumbnail.Checked ? "on" : "off";
 
             string[] lines = File.Exists(settingsPath) ? File.ReadAllLines(settingsPath) : new string[7];
             lines = SettingsLines(lines);
@@ -226,9 +226,9 @@ namespace yt_dlp
 
         private void toggle_DRMprotected(object sender, EventArgs e)
         {
-            toggleCheckBox_DRMprotected.Text = toggleCheckBox_DRMprotected.Checked ? "YES" : "NO";
+            toggleCheckBox_DRMprotected.Text = toggleCheckBox_DRMprotected.Checked ? "ON" : "OFF";
 
-            string selected = toggleCheckBox_DRMprotected.Checked ? "yes" : "no";
+            string selected = toggleCheckBox_DRMprotected.Checked ? "on" : "off";
 
             string[] lines = File.Exists(settingsPath) ? File.ReadAllLines(settingsPath) : new string[8]; // ここを8に変更
             lines = SettingsLines(lines);
@@ -507,7 +507,7 @@ namespace yt_dlp
             }
 
             // 2. DLhistory
-            bool useHistory = settings.Length >= 2 && settings[1].Trim().ToLower().Contains("yes");
+            bool useHistory = settings.Length >= 2 && settings[1].Trim().ToLower().Contains("on");
             string archiveOption = useHistory ? "--download-archive downloaded.txt" : "";
 
             // 3. 並列数
@@ -535,11 +535,11 @@ namespace yt_dlp
             }
 
             // 5.1 サムネイル
-            bool useThumbnail = settings.Length >= 7 && settings[6].Trim().ToLower().Contains("yes");
+            bool useThumbnail = settings.Length >= 7 && settings[6].Trim().ToLower().Contains("on");
             string ThumbnailOption = useThumbnail ? "--write-thumbnail" : "";
 
             // 5.2 DRMprotected
-            bool isDRMprotected = settings.Length >= 8 && settings[7].Trim().ToLower().Contains("yes");
+            bool isDRMprotected = settings.Length >= 8 && settings[7].Trim().ToLower().Contains("on");
             string DRMOption = isDRMprotected ? "--extractor-args \"youtube:player-client=default,-tv,web_safari,web_embedded\"" : "";
 
 
