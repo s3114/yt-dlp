@@ -3,13 +3,14 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using static System.Windows.Forms.LinkLabel;
-using System.IO.Compression;
-using System.Net.Http;
-using System.Text.Json;
 
 namespace yt_dlp
 {
@@ -61,7 +62,7 @@ namespace yt_dlp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            File.WriteAllText(versionPath, "0.2.8");
+            File.WriteAllText(versionPath, "0.2.9");
 
             string versionText = "不明";
 
@@ -173,6 +174,21 @@ namespace yt_dlp
                 }
                 toggleCheckBox_DRMprotected.Text = toggleCheckBox_DRMprotected.Checked ? "ON" : "OFF";
             }
+
+            // 9行目: BATrun=yes/no
+            if (lines.Length >= 9 && lines[8].StartsWith("BATrun="))
+            {
+                string flag = lines[8].Substring("BATrun=".Length).Trim().ToLower();
+                if (flag == "on")
+                {
+                    toggleCheckBox_BATchange.Checked = true;
+                }
+                else if (flag == "off")
+                {
+                    toggleCheckBox_BATchange.Checked = false;
+                }
+                toggleCheckBox_BATchange.Text = toggleCheckBox_BATchange.Checked ? "ON" : "OFF";
+            }
         }
 
         private void CheckedListBoxQuality_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -227,13 +243,20 @@ namespace yt_dlp
         private void toggle_DRMprotected(object sender, EventArgs e)
         {
             toggleCheckBox_DRMprotected.Text = toggleCheckBox_DRMprotected.Checked ? "ON" : "OFF";
-
             string selected = toggleCheckBox_DRMprotected.Checked ? "on" : "off";
-
             string[] lines = File.Exists(settingsPath) ? File.ReadAllLines(settingsPath) : new string[8]; // ここを8に変更
             lines = SettingsLines(lines);
-
             lines[7] = $"DRMprotected={selected}"; // 8行目（インデックス7）に書き込み
+            File.WriteAllLines(settingsPath, lines);
+        }
+
+        private void toggle_BATchange(object sender, EventArgs e)
+        {
+            toggleCheckBox_BATchange.Text = toggleCheckBox_BATchange.Checked ? "ON" : "OFF";
+            string selected = toggleCheckBox_BATchange.Checked ? "on" : "off";
+            string[] lines = File.Exists(settingsPath) ? File.ReadAllLines(settingsPath) : new string[9];
+            lines = SettingsLines(lines);
+            lines[8] = $"BATrun={selected}";
             File.WriteAllLines(settingsPath, lines);
         }
 
@@ -416,15 +439,16 @@ namespace yt_dlp
 
         private string[] SettingsLines(string[] lines)
         {
-            string[] result = new string[8];
+            string[] result = new string[9];
             result[0] = (lines.Length > 0) ? lines[0] : "download_quality=4";
             result[1] = (lines.Length > 1) ? lines[1] : "DLhistory=no";
-            result[2] = (lines.Length > 2) ? lines[2] : "parallelDL=8";
+            result[2] = (lines.Length > 2) ? lines[2] : "parallelDL=1";
             result[3] = (lines.Length > 3) ? lines[3] : "Platform=other";
             result[4] = (lines.Length > 4) ? lines[4] : "path";
             result[5] = (lines.Length > 5) ? lines[5] : "SaveDir";
             result[6] = (lines.Length > 6) ? lines[6] : "Thumbnail=no";
             result[7] = (lines.Length > 7) ? lines[7] : "DRMprotected=no";
+            result[8] = (lines.Length > 8) ? lines[8] : "BATrun=no";
             return result;
         }
 
@@ -813,38 +837,63 @@ namespace yt_dlp
 
                 proc.Exited += (s, e) =>
                 {
+                    // UI スレッドでの処理
                     this.Invoke((MethodInvoker)(() =>
                     {
-                        flowLayoutPanel1.Controls.Remove(downloadPanel);
+                        // プログレスバーとラベルを削除
+                        if (progressBar.Parent != null)
+                        {
+                            flowLayoutPanel1.Controls.Remove(progressBar);
+                        }
+                        if (label.Parent != null)
+                        {
+                            flowLayoutPanel1.Controls.Remove(label);
+                        }
+                        // ログに完了を表示
+                        richTextBoxLog.AppendText($"完了: {url}{Environment.NewLine}");
                     }));
 
-
+                    // バッチファイルでサムネイルを移動
                     try
                     {
-                        string thumbnailDir = Path.Combine(saveDir, "サムネイル");
-                        if (!Directory.Exists(thumbnailDir))
+                        string moveScriptPath = Path.Combine(Path.GetTempPath(), $"move_{Guid.NewGuid()}.bat");
+                        string moveTarget = Path.Combine(saveDir, "サムネイル");
+
+                        if (!Directory.Exists(moveTarget))
                         {
-                            Directory.CreateDirectory(thumbnailDir);
+                            Directory.CreateDirectory(moveTarget);
                         }
 
-                        string[] webpFiles = Directory.GetFiles(saveDir, "*.webp");
-                        foreach (var file in webpFiles)
-                        {
-                            string fileName = Path.GetFileName(file);
-                            string destPath = Path.Combine(thumbnailDir, fileName);
+                        string batContent = $@"
 
-                            if (!File.Exists(destPath)) // 上書きを防止
-                            {
-                                File.Move(file, destPath);
-                            }
-                        }
+                        @echo off
+                        move /Y ""{saveDir}\.webp"" ""{moveTarget}""
+                        move /Y ""{saveDir}\.jpg"" ""{moveTarget}""
+                        timeout /t 1 > nul
+                        del ""{moveScriptPath}""
+                        ";
+
+                        File.WriteAllText(moveScriptPath, batContent, Encoding.Default);
+
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "cmd.exe",
+                            Arguments = $"/C \"{moveScriptPath}\"",
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        });
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"サムネイルの移動に失敗しました:\n{ex.Message}", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        this.Activate();
+                        this.Invoke((MethodInvoker)(() =>
+                        {
+                            richTextBoxLog.AppendText($"[エラー] サムネイル移動中に例外が発生しました: {ex.Message}{Environment.NewLine}");
+                        }));
                     }
                 };
+
+
+
             }
         }
 
@@ -909,11 +958,20 @@ namespace yt_dlp
             {
                 try
                 {
-                    string ytDlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/download/2025.05.22/yt-dlp.exe";
+                    string ytDlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe";
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = "curl",
                         Arguments = $"-L -o \"{ytDlpPath}\" \"{ytDlpUrl}\"",
+                        UseShellExecute = false,
+                        CreateNoWindow = false
+                    })?.WaitForExit();
+
+                    // ダウンロード直後にアップデートを実行
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = ytDlpPath,
+                        Arguments = "--update-to nightly",
                         UseShellExecute = false,
                         CreateNoWindow = false
                     })?.WaitForExit();
@@ -1033,6 +1091,7 @@ namespace yt_dlp
             MessageBox.Show("セットアップ又はアップデートが完了しました。", "完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
             this.Activate();
         }
+
     }
 }
 
