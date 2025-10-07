@@ -62,7 +62,7 @@ namespace yt_dlp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            File.WriteAllText(versionPath, "0.2.9");
+            File.WriteAllText(versionPath, "0.2.10");
 
             string versionText = "不明";
 
